@@ -92,6 +92,7 @@ const (
 	AssetPathCheckpointerRoleBinding        = "manifests/pod-checkpointer-role-binding.yaml"
 	AssetPathCheckpointerClusterRole        = "manifests/pod-checkpointer-cluster-role.yaml"
 	AssetPathCheckpointerClusterRoleBinding = "manifests/pod-checkpointer-cluster-role-binding.yaml"
+	AssetPathPodSecurityPolicy              = "manifests/psp.yaml"
 	AssetPathEtcdClientSecret               = "manifests/etcd-client-tls.yaml"
 	AssetPathEtcdPeerSecret                 = "manifests/etcd-peer-tls.yaml"
 	AssetPathEtcdServerSecret               = "manifests/etcd-server-tls.yaml"

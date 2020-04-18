@@ -79,12 +79,16 @@ func (*render) Render(opts *plugin.Options, args []string) error {
 		return err
 	}
 
+	return Render(opts.AssetDir, config)
+}
+
+func Render(assetDir string, config *asset.Config) error {
 	as, err := asset.NewDefaultAssets(*config)
 	if err != nil {
 		return err
 	}
 
-	err = as.WriteFiles(opts.AssetDir)
+	err = as.WriteFiles(assetDir)
 	if err != nil {
 		return err
 	}

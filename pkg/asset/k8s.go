@@ -74,6 +74,7 @@ func newDynamicAssets(conf Config) Assets {
 		MustCreateAssetFromTemplate(AssetPathBootstrapScheduler, internal.BootstrapSchedulerTemplate, conf),
 		MustCreateAssetFromTemplate(AssetPathEncryptionConfig, internal.KubeSystemEncryptionConfigTemplate, conf),
 		MustCreateAssetFromTemplate(AssetPathAuditPolicy, internal.KubeSystemAuditPolicyTemplate, conf),
+		MustCreateAssetFromTemplate(AssetPathPodSecurityPolicy, internal.PodSecurityPolicy, conf),
 	}
 	switch conf.NetworkProvider {
 	case NetworkFlannel:

@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/kubernetes-sigs/bootkube/pkg/tlsutil"
@@ -173,10 +174,13 @@ type Config struct {
 // is an IPv6 or dual-stack system, `::` will be returned.  Otherwise
 // `0.0.0.0`.
 func (c Config) BindAllAddress() string {
+	var addr = "0.0.0.0"
+
 	if containsNonLocalIPv6(c.APIServiceIPs) {
-		return "::"
+		addr = "::"
 	}
-	return "0.0.0.0"
+
+	return strconv.Quote(addr)
 }
 
 // ServiceCIDRsString returns a "," concatenated string for the ServiceCIDRs

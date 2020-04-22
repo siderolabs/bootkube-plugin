@@ -1112,7 +1112,7 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "{{ .PodCIDR }}",
+      "Network": "{{ .FirstPodCIDRString }}",
       "Backend": {
         "Type": "vxlan",
         "Port": 4789
@@ -1290,7 +1290,7 @@ spec:
             - name: WAIT_FOR_DATASTORE
               value: "true"
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{ .PodCIDR }}"
+              value: "{{ .FirstPodCIDRString }}"
             - name: CALICO_IPV4POOL_IPIP
               value: "Always"
             - name: FELIX_IPINIPENABLED
@@ -1418,7 +1418,7 @@ spec:
             - name: WAIT_FOR_DATASTORE
               value: "true"
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{ .PodCIDR }}"
+              value: "{{ .FirstPodCIDRString }}"
             - name: CALICO_IPV4POOL_IPIP
               value: "Always"
             - name: NODENAME

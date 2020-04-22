@@ -189,6 +189,11 @@ func (c Config) PodCIDRsString() string {
 	return joinStringsFromSliceOrSingle(stringerSlice(c.PodCIDRs), c.PodCIDR)
 }
 
+// FirstPodCIDRString returns the first (or only) PodCIDR (IPv4 CIDR) as a string
+func (c Config) FirstPodCIDRString() string {
+	return c.PodCIDRs[0].String()
+}
+
 // APIServiceIPsString returns a "," concatenated string for the APIServiceIPs
 func (c Config) APIServiceIPsString() string {
 	return joinStringsFromSliceOrSingle(stringerSlice(c.APIServiceIPs), c.APIServiceIP)

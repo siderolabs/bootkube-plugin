@@ -12,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/kubernetes-sigs/bootkube/pkg/tlsutil"
@@ -170,17 +169,20 @@ type Config struct {
 	DNSServiceIP net.IP
 }
 
-// BindAllAddress indicates the address to use when binding all IPs.  If this
-// is an IPv6 or dual-stack system, `::` will be returned.  Otherwise
-// `0.0.0.0`.
+// BindAllAddress indicates the address to use when binding all IPs.
 func (c Config) BindAllAddress() string {
-	var addr = "0.0.0.0"
 
-	if containsNonLocalIPv6(c.APIServiceIPs) {
-		addr = "::"
-	}
-
-	return strconv.Quote(addr)
+	// We cannot return a "::" here, even if we are using IPv6 because:
+	//
+	//   - The "::" confuses YAML without quotes
+	//
+	//   - With quotes, kube-apiserver is confused and rejects the --bind-address parameter
+	//
+	//
+	// Luckily, it appear we do not need to worry about this:
+	//   https://github.com/kubernetes/kubernetes/issues/86479#issuecomment-567967756
+	//
+	return "0.0.0.0"
 }
 
 // ServiceCIDRsString returns a "," concatenated string for the ServiceCIDRs

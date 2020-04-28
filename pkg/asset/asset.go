@@ -85,6 +85,7 @@ const (
 	AssetPathCoreDNSDeployment              = "manifests/coredns-deployment.yaml"
 	AssetPathCoreDNSSA                      = "manifests/coredns-service-account.yaml"
 	AssetPathCoreDNSSvc                     = "manifests/coredns-service.yaml"
+	AssetPathCoreDNSv6Svc                   = "manifests/coredns-ipv6-service.yaml"
 	AssetPathSystemNamespace                = "manifests/kube-system-ns.yaml"
 	AssetPathCheckpointer                   = "manifests/pod-checkpointer.yaml"
 	AssetPathCheckpointerSA                 = "manifests/pod-checkpointer-sa.yaml"
@@ -115,6 +116,8 @@ type Config struct {
 	APIServerExtraArgs         map[string]string
 	ControllerManagerExtraArgs map[string]string
 	SchedulerExtraArgs         map[string]string
+	ProxyMode                  string
+	ProxyExtraArgs             map[string]string
 	EtcdCACert                 *x509.Certificate
 	EtcdClientCert             *x509.Certificate
 	EtcdClientKey              *rsa.PrivateKey
@@ -205,9 +208,36 @@ func (c Config) APIServiceIPsString() string {
 	return joinStringsFromSliceOrSingle(stringerSlice(c.APIServiceIPs), c.APIServiceIP)
 }
 
-// DNSServiceIPsString returns a "," concatenated string for the DNSServiceIPs
-func (c Config) DNSServiceIPsString() string {
-	return joinStringsFromSliceOrSingle(stringerSlice(c.DNSServiceIPs), c.DNSServiceIP)
+// DNSServiceString returns the service address for DNS.  If this is a dual-stack cluster, it will return the IPv4 address.
+func (c Config) DNSServiceIPString() string {
+	if len(c.DNSServiceIPs) < 1 {
+		return c.DNSServiceIP.String()
+	}
+
+	if len(c.DNSServiceIPs) == 1 {
+		return c.DNSServiceIPs[0].String()
+	}
+
+	for _, ip := range c.DNSServiceIPs {
+		// For now, dual stack systems should always have IPv4 address first, but
+		// we will look through them just in case.
+		if ip.To4().Equal(ip) {
+			return ip.String()
+		}
+	}
+
+	// No valid service IP found
+	return ""
+}
+
+// DNSServiceIPv6String returns the IPv6 service address for DNS
+func (c Config) DNSServiceIPv6String() string {
+	for _, ip := range c.DNSServiceIPs {
+		if isNonLocalIPv6(ip) {
+			return ip.String()
+		}
+	}
+	return ""
 }
 
 func stringerSlice(in interface{}) []string {
@@ -253,13 +283,19 @@ func joinStringsFromSliceOrSingle(inSlice []string, inSingle fmt.Stringer) strin
 
 func containsNonLocalIPv6(in []net.IP) bool {
 	for _, ip := range in {
-		if ip == nil || ip.IsLoopback() || ip.IsUnspecified() {
-			continue
-		}
-
-		if ip.To4() == nil && ip.To16() != nil {
+		if isNonLocalIPv6(ip) {
 			return true
 		}
+	}
+	return false
+}
+
+func isNonLocalIPv6(in net.IP) bool {
+	if in == nil || in.IsLoopback() || in.IsUnspecified() {
+		return false
+	}
+	if in.To4() == nil && in.To16() != nil {
+		return true
 	}
 	return false
 }

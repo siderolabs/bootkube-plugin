@@ -117,6 +117,16 @@ func newDynamicAssets(conf Config) Assets {
 			MustCreateAssetFromTemplate(AssetPathCalicoClusterInformationsCRD, internal.CalicoClusterInformationsCRD, conf),
 			MustCreateAssetFromTemplate(AssetPathCalicoIPPoolsCRD, internal.CalicoIPPoolsCRD, conf))
 	}
+
+	// If we are dual-stack, we need additional IPv6 service definitions.
+	// (Single stack IPv6-only clusters do not need this, as they are handled by
+	// the normal services above.)
+	if containsNonLocalIPv6(conf.DNSServiceIPs) && len(conf.DNSServiceIPs) > 1 {
+		assets = append(assets,
+			MustCreateAssetFromTemplate(AssetPathCoreDNSv6Svc, internal.CoreDNSv6SvcTemplate, conf),
+		)
+	}
+
 	return assets
 }
 

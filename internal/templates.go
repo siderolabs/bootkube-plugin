@@ -739,8 +739,11 @@ spec:
         - --cluster-cidr={{ .PodCIDRsString }}
         - --hostname-override=$(NODE_NAME)
         - --kubeconfig=/etc/kubernetes/kubeconfig
-        - --proxy-mode=iptables
+        - --proxy-mode={{ .ProxyMode }}
         - --conntrack-max-per-core=0
+        {{- range $k, $v := .ProxyExtraArgs }}
+        - --{{ $k }}={{ $v }}
+        {{- end }}
         env:
           - name: NODE_NAME
             valueFrom:
@@ -1024,7 +1027,33 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{ .DNSServiceIPsString }}
+  clusterIP: {{ .DNSServiceIPString }}
+  ports:
+    - name: dns
+      port: 53
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+`)
+
+var CoreDNSv6SvcTemplate = []byte(`apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dnsv6
+  namespace: kube-system
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9153"
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+spec:
+  selector:
+    k8s-app: kube-dns
+  clusterIP: {{ .DNSServiceIPv6String }}
+  ipFamily: IPv6
   ports:
     - name: dns
       port: 53

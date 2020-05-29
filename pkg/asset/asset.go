@@ -304,7 +304,6 @@ func isNonLocalIPv6(in net.IP) bool {
 type ImageVersions struct {
 	Etcd            string
 	Flannel         string
-	FlannelCNI      string
 	Calico          string
 	CalicoCNI       string
 	CoreDNS         string

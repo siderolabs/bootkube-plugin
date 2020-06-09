@@ -164,10 +164,10 @@ spec:
     spec:
       containers:
       - name: kube-apiserver
-        image: {{ .Images.Hyperkube }}
+        image: {{ .Images.KubeAPIServer }}
         command:
-        - /hyperkube
-        - kube-apiserver
+        - /go-runner
+        - /usr/local/bin/kube-apiserver
         - --enable-admission-plugins=PodSecurityPolicy,NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeClaimResize,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,Priority,NodeRestriction
         - --advertise-address=$(POD_IP)
         - --allow-privileged=true
@@ -253,10 +253,10 @@ metadata:
 spec:
   containers:
   - name: kube-apiserver
-    image: {{ .Images.Hyperkube }}
+    image: {{ .Images.KubeAPIServer }}
     command:
-    - /hyperkube
-    - kube-apiserver
+    - /go-runner
+    - /usr/local/bin/kube-apiserver
     - --advertise-address=$(POD_IP)
     - --allow-privileged=true
     - --authorization-mode=Node,RBAC
@@ -480,10 +480,10 @@ spec:
     spec:
       containers:
       - name: kube-controller-manager
-        image: {{ .Images.Hyperkube }}
+        image: {{ .Images.KubeControllerManager }}
         command:
-        - ./hyperkube
-        - kube-controller-manager
+        - /go-runner
+        - /usr/local/bin/kube-controller-manager
         - --use-service-account-credentials
         - --allocate-node-cidrs=true
         - --cloud-provider={{ .CloudProvider }}
@@ -569,10 +569,10 @@ metadata:
 spec:
   containers:
   - name: kube-controller-manager
-    image: {{ .Images.Hyperkube }}
+    image: {{ .Images.KubeControllerManager }}
     command:
-    - ./hyperkube
-    - kube-controller-manager
+    - /go-runner
+    - /usr/local/bin/kube-controller-manager
     - --allocate-node-cidrs=true
     - --cluster-cidr={{ .PodCIDRsString }}
     - --service-cluster-ip-range={{ .ServiceCIDRsString }}
@@ -639,10 +639,10 @@ spec:
     spec:
       containers:
       - name: kube-scheduler
-        image: {{ .Images.Hyperkube }}
+        image: {{ .Images.KubeScheduler }}
         command:
-        - ./hyperkube
-        - kube-scheduler
+        - /go-runner
+        - /usr/local/bin/kube-scheduler
         - --leader-elect=true
         - --profiling=false
         {{- range $k, $v := .SchedulerExtraArgs }}
@@ -677,10 +677,10 @@ metadata:
 spec:
   containers:
   - name: kube-scheduler
-    image: {{ .Images.Hyperkube }}
+    image: {{ .Images.KubeScheduler }}
     command:
-    - ./hyperkube
-    - kube-scheduler
+    - /go-runner
+    - /usr/local/bin/kube-scheduler
     - --kubeconfig=/etc/kubernetes/secrets/kubeconfig
     - --leader-elect=true
     - --profiling=false
@@ -732,10 +732,9 @@ spec:
     spec:
       containers:
       - name: kube-proxy
-        image: {{ .Images.Hyperkube }}
+        image: {{ .Images.KubeProxy }}
         command:
-        - ./hyperkube
-        - kube-proxy
+        - /usr/local/bin/kube-proxy
         - --cluster-cidr={{ .PodCIDRsString }}
         - --hostname-override=$(NODE_NAME)
         - --kubeconfig=/etc/kubernetes/kubeconfig

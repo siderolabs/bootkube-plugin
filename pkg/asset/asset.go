@@ -308,9 +308,14 @@ type ImageVersions struct {
 	Calico          string
 	CalicoCNI       string
 	CoreDNS         string
-	Hyperkube       string
 	Kenc            string
 	PodCheckpointer string
+
+	Kubelet               string
+	KubeAPIServer         string
+	KubeControllerManager string
+	KubeProxy             string
+	KubeScheduler         string
 }
 
 // NewDefaultAssets returns a list of default assets, optionally

@@ -916,7 +916,7 @@ metadata:
     kubernetes.io/name: "CoreDNS"
     kubernetes.io/cluster-service: "true"
 spec:
-  replicas : 2
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -942,8 +942,10 @@ spec:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
       serviceAccountName: coredns
+      priorityClassName: system-cluster-critical
       tolerations:
         - key: node-role.kubernetes.io/master
+          operator: Exists
           effect: NoSchedule
       containers:
         - name: coredns

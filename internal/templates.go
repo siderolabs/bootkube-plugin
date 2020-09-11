@@ -1069,6 +1069,10 @@ kind: ClusterRole
 metadata:
   name: flannel
 rules:
+  - apiGroups: ['extensions']
+    resources: ['podsecuritypolicies']
+    verbs: ['use']
+    resourceNames: ['psp.flannel.unprivileged']
   - apiGroups:
       - ""
     resources:
@@ -1170,12 +1174,38 @@ spec:
         k8s-app: flannel
     spec:
       serviceAccountName: flannel
+      initContainers:
+      - name: install-config
+        image: {{ .Images.Flannel }}
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      - name: install-cni
+        image: {{ .Images.FlannelCNI }}
+        command: ["/install-cni.sh"]
+        volumeMounts:
+        - name: host-cni-bin
+          mountPath: /host/opt/cni/bin/
       containers:
       - name: kube-flannel
         image: {{ .Images.Flannel }}
-        command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr", "--iface=$(POD_IP)"]
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
         securityContext:
           privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "NET_RAW"]
         env:
         - name: POD_NAME
           valueFrom:
@@ -1191,25 +1221,9 @@ spec:
               fieldPath: status.podIP
         volumeMounts:
         - name: run
-          mountPath: /run
-        - name: cni
-          mountPath: /etc/cni/net.d
+          mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
-      - name: install-cni
-        image: {{ .Images.FlannelCNI }}
-        command: ["/install-cni.sh"]
-        env:
-        - name: CNI_NETWORK_CONFIG
-          valueFrom:
-            configMapKeyRef:
-              name: kube-flannel-cfg
-              key: cni-conf.json
-        volumeMounts:
-        - name: cni
-          mountPath: /host/etc/cni/net.d
-        - name: host-cni-bin
-          mountPath: /host/opt/cni/bin/
       hostNetwork: true
       tolerations:
       - effect: NoSchedule
@@ -1219,7 +1233,7 @@ spec:
       volumes:
         - name: run
           hostPath:
-            path: /run
+            path: /run/flannel
         - name: cni
           hostPath:
             path: /etc/cni/net.d

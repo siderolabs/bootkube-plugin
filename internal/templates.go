@@ -172,6 +172,7 @@ spec:
         - --advertise-address=$(POD_IP)
         - --allow-privileged=true
         - --anonymous-auth=false
+        - --api-audiences={{ .ControlPlaneEndpoint }}
         - --authorization-mode=Node,RBAC
         - --bind-address={{ .BindAllAddress }}
         - --client-ca-file=/etc/kubernetes/secrets/ca.crt
@@ -202,7 +203,9 @@ spec:
         - --kubelet-client-certificate=/etc/kubernetes/secrets/apiserver-kubelet-client.crt
         - --kubelet-client-key=/etc/kubernetes/secrets/apiserver-kubelet-client.key
         - --secure-port={{ .LocalAPIServerPort }}
+        - --service-account-issuer={{ .ControlPlaneEndpoint }}
         - --service-account-key-file=/etc/kubernetes/secrets/service-account.pub
+        - --service-account-signing-key-file=/etc/kubernetes/secrets/service-account.key
         - --service-cluster-ip-range={{ .ServiceCIDRsString }}
         - --tls-cert-file=/etc/kubernetes/secrets/apiserver.crt
         - --tls-private-key-file=/etc/kubernetes/secrets/apiserver.key
@@ -224,9 +227,12 @@ spec:
           readOnly: true
       hostNetwork: true
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/control-plane: ""
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
       volumes:
@@ -259,6 +265,7 @@ spec:
     - /usr/local/bin/kube-apiserver
     - --advertise-address=$(POD_IP)
     - --allow-privileged=true
+    - --api-audiences={{ .ControlPlaneEndpoint }}
     - --authorization-mode=Node,RBAC
     - --bind-address={{ .BindAllAddress }}
     - --client-ca-file=/etc/kubernetes/secrets/ca.crt
@@ -280,7 +287,9 @@ spec:
     - --kubelet-client-certificate=/etc/kubernetes/secrets/apiserver-kubelet-client.crt
     - --kubelet-client-key=/etc/kubernetes/secrets/apiserver-kubelet-client.key
     - --secure-port={{ .LocalAPIServerPort }}
+    - --service-account-issuer={{ .ControlPlaneEndpoint }}
     - --service-account-key-file=/etc/kubernetes/secrets/service-account.pub
+    - --service-account-signing-key-file=/etc/kubernetes/secrets/service-account.key
     - --service-cluster-ip-range={{ .ServiceCIDRsString }}
     - --cloud-provider={{ .CloudProvider }}
     - --tls-cert-file=/etc/kubernetes/secrets/apiserver.crt
@@ -374,10 +383,13 @@ spec:
       serviceAccountName: pod-checkpointer
       hostNetwork: true
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/control-plane: ""
       restartPolicy: Always
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
       volumes:
@@ -515,13 +527,16 @@ spec:
           mountPath: /etc/ssl/certs
           readOnly: true
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/control-plane: ""
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
       serviceAccountName: kube-controller-manager
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
       volumes:
@@ -655,12 +670,15 @@ spec:
           initialDelaySeconds: 15
           timeoutSeconds: 15
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/control-plane: ""
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
   updateStrategy:
@@ -945,6 +963,9 @@ spec:
       priorityClassName: system-cluster-critical
       tolerations:
         - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
       containers:

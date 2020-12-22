@@ -489,6 +489,8 @@ spec:
       labels:
         tier: control-plane
         k8s-app: kube-controller-manager
+      annotations:
+        checkpointer.alpha.coreos.com/checkpoint: "true"
     spec:
       containers:
       - name: kube-controller-manager
@@ -651,6 +653,8 @@ spec:
       labels:
         tier: control-plane
         k8s-app: kube-scheduler
+      annotations:
+        checkpointer.alpha.coreos.com/checkpoint: "true"
     spec:
       containers:
       - name: kube-scheduler
